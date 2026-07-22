@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>40th SOC Beta Fuel Calculator</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1s; /* Corrected */
+            --bg-color: #1a1a1a;
+            --panel-color: #2d2d2d;
+            --accent-color: #4caf50; 
+            --combat-color: #f44336; 
+            --text-color: #e0e0e0;
+            --border-color: #444;
+            --warning-color: #ff9800;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1s; /* Fixed fallback */
+            background-color: #1a1a1a;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center; 
+            align-items: center;     
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--panel-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 480px;
+            max-width: 95%;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            margin: 0 0 1rem 0;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin: 1rem 0 0.5rem 0;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        .section-combat {
+            border: 1px solid var(--combat-color);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .section-combat h2 {
+            color: var(--combat-color);
+            margin-top: 0;
+        }
+
+        .form-group { margin-bottom: 0.8rem; }
+
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 8px;
+            background-color: #121212;
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .results {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .result-value {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .error-text { color: var(--combat-color) !important; }
+        .combat-error { color: varvar(--combat-color) !important; }
+
+        .unit { font-size: 0.8rem; color: #777; margin-left: 5px; }
+
+        .disclaimer {
+            margin-top: 1rem;
+            font-size: 0.65rem;
+            color: var(--warning-color);
+            line_height: 1.3;
+            border: 1px solid var(--warning-color);
+            padding: 8px;
+            text-align: center;
+        }
+
+        .footer { text-align: center; font-size: 0.65rem; color: #555; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>40th SOC Beta Fuel Calculator</h1>
+
+    <!-- CRUISE SECTION -->
+    <h2 style="color: var(--accent-color);">Cruise / Transit Phase</h2>
+    <div class="form-group">
+        <label for="aircraft">Aircraft Mission Profile</label>
+        <select id="aircraft" onchange="applyPreset()">
+            <option value="custom">-- Manual Entry --</option>
+            <option value="f14">F-1                4 Tomcat</option>
+            <option value="f18">F/A-18C Hornet</option>
+            <option value="f16">F-16C Viper</option>
+            <option value="f15e">F-15E Strike Eagle</option>
+        </select>
+    </div>
+
+    <div class="grid-2">
+        <div class="form-group">
+            <label for="engines">Engines</label>
+            <input type="number" id="engines" value="1" min="1" max="2" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label for="speed">Cruise Speed (kts)</label>
+            <input type="number" id="speed" value="450" oninput="calculate()">
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="form-group">
+            <label for="burnRate">Cruise Burn (lbs/hr/eng)</label>
+            <input type="number" id="burnRate" value="5000" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label for="totalFuel">Total Fuel (lbs)</label>
+            <input type="number" id="totalFuel" value="7000" oninput="calculate()">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="reserveFuel">Required Reserve (lbs)</label>
+        <input type="number" id="reserveFuel" value="1000" oninput="calculate()">
+    </div>
+
+    <!-- COMBAT SECTION -->
+    <div class="section-combat">
+        <h2 style="color: var(--combat-color);">Combat Phase</h2>
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="combatBurnRate">Combat Burn (lbs/hr)</label>
+                <input type="number" id="combatBurnRate" value="30000" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label for="combatDuration">Duration (mins)</label>
+                <input type="number" id="combatDuration" value="10" oninput="calculate()">
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results">
+        <div class="result-item">
+            <span>Remaining Endurance:</span>
+            <span class="result-value" id="resTime">00:00</span>
+        </div>
+        <div class="result-item">
+            <span>Max One Way:</span>
+            <span class="result-value" id="resOneWay">0 <span class="unit">NM</span></span>
+        </div>
+        <div class="result-item">
+            <span>Max Round Trip:</span>
+            <span class="result-value" id="resRoundTrip">0 <span class="unit">NM</span></span>
+        </div>
+    </div>
+
+    <div id="errorAlert" style="color: var(--combat-color); font-weight: bold; text-align: center; margin-top: 10px; display: none;">
+        CRITICAL: INSUFFICIENT FUEL FOR COMBAT
+    </div>
+
+    <div class="disclaimer">
+        <strong>CAUTION:</strong> Combat fuel is subtracted from total usable fuel before cruise calculations. Always verify with mission data.
+    </div>
+
+    <div class="footer">DCS MISSION CALCULATOR v1.10 (STABLE)</div>
+</div>
+
+<script>
+    const presets = {
+        f14: { 
+            engines: 2, burnRate: 4500, speed: 500, totalFuel: 20000, 
+            reserve: 4000, combatBurn: 60000, combatDur: 7 
+        },
+        f18: { 
+            engines: 2, burnRate: 4500, speed: 400, totalFuel: 13000, 
+            reserve: 4000, combatBurn: 35000, combatDur: 5 
+        },
+        f16: { 
+            engines: 1, burnRate: 5000, speed: 450, totalFuel: 12000, 
+            reserve: 2500, combatBurn: 70000, combatDur: 5 
+        },
+        f15e: { 
+            engines: 2, burnRate: 4000, speed: 500, totalFuel: 32000, 
+            reserve: 5000, combatBurn: 100000, combatDur: 10 
+        }
+    };
+
+    function applyPreset() {
+        const selection = document.getElementById('aircraft').value;
+        if (selection === 'custom') return;
+
+        const data = presets[selection];
+        document.getElementById('engines').value = data.engines;
+        document	.getElementById('burnRate').value = data.burnRate;
+        document.getElementById('speed').value = data.speed;
+        document.getElementById('totalFuel').value = data.totalFuel;
+        document.getElementById('reserveFuel').value = data.reserve;
+        document.getElementById('combatBurnRate').value = data.combatBurn;
+        document.getElementById('combatDuration').value = data.combatDur;
+
+        calculate();
+    }
+
+    function calculate() {
+        const engines = Math.max(0, parseFloat(document.getElementById('engines').value) || 0);
+        const cruiseBurnPerEng = Math.max(0, parseFloat(document.getElementById('burnRate').value) || 0);
+        const speed = Math.max(0, parseFloat(document.getElementById('speed').value) || 0);
+        const totalFuel = Math.max(0, parseFloat(document.getElementById('totalFuel').value) || 0);
+        const reserveFuel = Math.max(0, parseFloat(document.getElementById('reserveFuel').value) || 0);
+        const combatBurnRate = Math.max(0, parseFloat(document.getElementById('combatBurnRate').value) || 0);
+        const combatDuration = Math.max(0, parseFloat(document.getElementById('combatDuration').value) || 0);
+
+        const errorAlert = document.getElementById('errorAlert');
+        const resTimeElem = document.getElementById('resTime');
+        const resOneWayElem = document.getElementById('resOneWay');
+        const resRoundTripElem = document.getElementById('resRoundTrip');
+
+        const combatFuelUsed = (combatBurnRate / 60) * combatDuration;
+        const netUsableFuel = totalFuel - reserveFuel - combatFuelUsed;
+
+        errorAlert.style.display = "none";
+        resTimeElem.classList.remove('combat-error');
+        resOneWayElem.classList.remove('combat-error');
+        resRoundTripElem.classList.remove('combat-error');
+
+        if (netUsableFuel < 0) {
+            errorAlert.style.display = "block";
+            resTimeElem.innerHTML = "00:00";
+            resOneWayElem.innerHTML = "0 <span class='unit'>NM</span>";
+            resRoundTripElem.innerHTML = "0 <span class='unit'>NM</span>";
+            resTimeElem.classList.add('combat-error');
+        } else {
+            const cruiseBurnPerHourTotal = engines * cruiseBurnPerEng;
+
+            if (cruiseBurnPerHourTotal > 0 && speed > 0) {
+                const enduranceHours = netUsableFuel / cruiseBurnPerHourTotal;
+                const oneWayDist = enduranceHours * speed;
+                const roundTripDist = oneWayDist / 2;
+
+                const hrs = Math.floor(enduranceHours);
+                const mins = Math.round((enduranceHours - hrs) * 60);
+                const timeString = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+
+                resTimeElem.innerHTML = `${timeString}<span class='unit'>h/m</span>`;
+                resOneWayElem.innerHTML = `${oneWayDist.toFixed(1)}<span class='unit'>NM</span>`;
+                resRoundTripElem.innerHTML = `${roundTripDist.toFixed(1)}<span class='unit'>NM</span>`;
+            } else {
+                resTimeElem.innerHTML = "00:00";
+                resOneWayElem.innerHTML = "0 <span class='unit'>NM</span>";
+                resRoundTripElem.innerHTML = "0 <span class='unit'>NM</span>";
+            }
+        }
+    }
+
+    window.onload = calculate;
+</script>
+
+</body>
+</html>
